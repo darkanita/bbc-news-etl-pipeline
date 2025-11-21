@@ -1,0 +1,38 @@
+name: Setup Azure PostgreSQL Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      schema:
+        description: "Schema name for the ETL tables"
+        required: true
+        default: "bbc_etl"
+
+jobs:
+  setup-db:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Set schema variable
+      run: echo "SCHEMA_NAME=${{ github.event.inputs.schema }}" >> $GITHUB_ENV
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run DB setup script
+      env:
+        AZURE_PG_HOST: ${{ secrets.AZURE_PG_HOST }}
+        AZURE_PG_USER: ${{ secrets.AZURE_PG_USER }}
+        AZURE_PG_PASSWORD: ${{ secrets.AZURE_PG_PASSWORD }}
+        AZURE_PG_DB: ${{ secrets.AZURE_PG_DB }}
+        AZURE_PG_PORT: ${{ secrets.AZURE_PG_PORT }}
+        SCHEMA_NAME: ${{ github.event.inputs.schema }}
+      run: python etl/setup_db.py
