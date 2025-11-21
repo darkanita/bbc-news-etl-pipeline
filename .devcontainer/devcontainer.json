@@ -1,0 +1,23 @@
+{
+    "name": "BBC News ETL Pipeline",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "remoteUser": "vscode",
+    "features": {},
+    "forwardPorts": [],
+    "postCreateCommand": "echo 'Devcontainer listo'",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.pythonPath": "/usr/local/bin/python",
+                "python.formatting.provider": "black"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ]
+        }
+    }
+}
