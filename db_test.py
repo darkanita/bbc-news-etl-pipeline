@@ -7,7 +7,7 @@ DB_URL = os.getenv("DB_URL")  # Example: "host=yourhost port=5432 dbname=yourdb"
 
 try:
     conn = psycopg2.connect(
-        host=DB_HOST,
+        host=DB_URL,
         user=DB_USER,
         password=DB_PASSWORD,
         dbname='postgres',
