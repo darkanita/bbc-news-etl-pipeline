@@ -1,0 +1,94 @@
+name: Multi-Stage Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  # ---------- DEPLOY TO DEV ----------
+  deploy_dev:
+    runs-on: ubuntu-latest
+    environment: dev   # <-- secrets del environment DEV
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary
+
+      - name: Run DEV DB test
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          echo "🚀 Running DEV deployment..."
+          python connect.py
+
+
+  # ---------- DEPLOY TO UAT ----------
+  deploy_uat:
+    runs-on: ubuntu-latest
+    needs: deploy_dev       # solo se ejecuta si DEV pasa
+    environment: uat        # <-- secrets del environment UAT
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary
+
+      - name: Run UAT DB test
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          echo "🧪 Running UAT deployment..."
+          python connect.py
+
+
+  # ---------- DEPLOY TO PROD ----------
+  deploy_prod:
+    runs-on: ubuntu-latest
+    needs: deploy_uat        # solo si UAT pasa
+    environment: prod        # <-- secrets del environment PROD
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary
+
+      - name: Run PROD DB test
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          echo "🏁 Running PROD deployment..."
+          python connect.py
