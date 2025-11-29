@@ -1,0 +1,46 @@
+name: Multi-Environment Deployment Branches
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - uat
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Selecciona automáticamente el environment según la rama destino del PR
+    environment: ${{ github.base_ref }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Detect environment & branch
+        run: |
+          echo "📝 Pull request hacia: ${{ github.base_ref }}"
+          echo "➡️  Environment: ${{ github.base_ref }}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install psycopg2-binary
+
+      - name: Run environment-specific deployment
+        env:
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          echo "🚀 Ejecutando deploy para environment ${{ github.base_ref }}"
+          python connect.py
